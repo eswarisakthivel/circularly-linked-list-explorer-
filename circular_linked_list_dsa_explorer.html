@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular Linked List | Cyberpunk DSA Immersive Project</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts Inter & Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#2C3531',
+                        neonTeal: '#116466',
+                        warmGold: '#D9B08C',
+                        softPeach: '#FFCB9A',
+                        iceGlass: '#D1E8E2',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom cursor hiding and styling */
+        body, button, input, select, a {
+            cursor: none !important;
+        }
+        /* Custom Sci-Fi Cursor */
+        #custom-cursor {
+            pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s;
+        }
+        .glass-panel {
+            background: rgba(209, 232, 226, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(17, 100, 102, 0.3);
+        }
+        .glass-panel-hover:hover {
+            background: rgba(209, 232, 226, 0.09);
+            border-color: rgba(217, 176, 140, 0.6);
+            box-shadow: 0 0 25px rgba(17, 100, 102, 0.25);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2C3531;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #116466;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D9B08C;
+        }
+    </style>
+</head>
+<body class="bg-[#2C3531] text-[#D1E8E2] font-sans antialiased selection:bg-[#116466] selection:text-[#FFCB9A] overflow-x-hidden relative">
+
+    <div id="custom-cursor">
+        <div class="relative flex items-center justify-center">
+            <div class="w-8 h-8 rounded-full border border-[#116466] animate-spin absolute" style="animation-duration: 8s;"></div>
+            <div class="w-4 h-4 rounded-full border-2 border-[#D9B08C] bg-[#FFCB9A]/20 shadow-[0_0_10px_#FFCB9A]"></div>
+            <div class="w-1.5 h-1.5 rounded-full bg-[#FFCB9A] absolute"></div>
+        </div>
+    </div>
+
+    <canvas id="bg-canvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+
+    <header class="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-[#116466]/40 shadow-xl backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#116466] to-[#D9B08C] flex items-center justify-center shadow-[0_0_15px_rgba(17,100,102,0.6)]">
+                    <i data-lucide="orbit" class="w-6 h-6 text-[#FFCB9A]"></i>
+                </div>
+                <div>
+                    <span class="text-lg font-extrabold tracking-wider bg-gradient-to-r from-[#D1E8E2] via-[#FFCB9A] to-[#D9B08C] bg-clip-text text-transparent">CYBER_CIRCULAR</span>
+                    <span class="block text-xs font-mono text-[#D9B08C]/80 tracking-widest uppercase">DSA Immersive Engine</span>
+                </div>
+            </div>
+            
+            <nav class="hidden lg:flex items-center space-x-6 text-sm font-medium">
+                <a href="#intro" class="hover:text-[#FFCB9A] transition-colors">Intro</a>
+                <a href="#structure" class="hover:text-[#FFCB9A] transition-colors">Blueprint</a>
+                <a href="#operations" class="hover:text-[#FFCB9A] transition-colors">Operations</a>
+                <a href="#code" class="hover:text-[#FFCB9A] transition-colors">C-Code</a>
+                <a href="#visualizer" class="text-[#FFCB9A] font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#116466]/40 border border-[#116466] shadow-[0_0_10px_rgba(17,100,102,0.5)]">
+                    <i data-lucide="play-circle" class="w-4 h-4"></i> Live Sandbox
+                </a>
+                <a href="#complexity" class="hover:text-[#FFCB9A] transition-colors">Big-O</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <a href="#visualizer" class="lg:hidden px-3 py-2 bg-[#116466] text-[#FFCB9A] rounded-lg text-xs font-bold border border-[#D9B08C]/40">Sandbox</a>
+                <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-lg glass-panel hover:bg-[#116466]/20">
+                    <i data-lucide="menu" class="w-6 h-6 text-[#D1E8E2]"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Dropdown -->
+        <div id="mobile-menu" class="hidden lg:hidden glass-panel border-t border-[#116466]/40 px-4 py-4 space-y-3">
+            <a href="#intro" class="block py-2 text-sm hover:text-[#FFCB9A]">Introduction</a>
+            <a href="#structure" class="block py-2 text-sm hover:text-[#FFCB9A]">Structure & Blueprint</a>
+            <a href="#operations" class="block py-2 text-sm hover:text-[#FFCB9A]">Operations Hub</a>
+            <a href="#code" class="block py-2 text-sm hover:text-[#FFCB9A]">C Implementation</a>
+            <a href="#visualizer" class="block py-2 text-sm text-[#FFCB9A] font-bold">Interactive Visualizer Tool</a>
+            <a href="#complexity" class="block py-2 text-sm hover:text-[#FFCB9A]">Time & Space Complexity</a>
+        </div>
+    </header>
+
+    <section class="relative pt-32 pb-20 md:pt-44 md:pb-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-7 space-y-6">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-panel border border-[#116466] text-xs font-mono text-[#FFCB9A] shadow-[0_0_15px_rgba(17,100,102,0.3)]">
+                    <span class="w-2 h-2 rounded-full bg-[#FFCB9A] animate-ping"></span>
+                    Advanced Data Structures & Algorithms Module
+                </div>
+                <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight leading-none">
+                    Mastering the <span class="bg-gradient-to-r from-[#FFCB9A] via-[#D9B08C] to-[#116466] bg-clip-text text-transparent">Circular Linked List</span>
+                </h1>
+                <p class="text-lg text-[#D1E8E2]/80 font-light leading-relaxed">
+                    Explore the infinite loop of pointers. Dive deep into structural mechanics, algorithmic implementations, real-world CPU scheduling, and test live operations in our futuristic sandbox.
+                </p>
+                <div class="flex flex-wrap gap-4 pt-4">
+                    <a href="#visualizer" class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#116466] to-[#2C3531] border border-[#D9B08C]/50 text-[#FFCB9A] font-semibold flex items-center gap-2 shadow-[0_0_20px_rgba(17,100,102,0.5)] hover:scale-105 transition-all">
+                        <i data-lucide="play" class="w-5 h-5"></i> Launch Interactive Sandbox
+                    </a>
+                    <a href="#code" class="px-6 py-3.5 rounded-xl glass-panel border border-[#116466] text-[#D1E8E2] font-semibold flex items-center gap-2 hover:bg-[#116466]/20 transition-all">
+                        <i data-lucide="code" class="w-5 h-5 text-[#D9B08C]"></i> View C Code
+                    </a>
+                </div>
+                <div class="grid grid-cols-3 gap-4 pt-6 border-t border-[#116466]/30">
+                    <div class="glass-panel p-3 rounded-xl text-center">
+                        <span class="block text-2xl font-bold text-[#FFCB9A] font-mono">O(1)</span>
+                        <span class="text-xs text-[#D1E8E2]/60 uppercase tracking-wider">Head Insertion</span>
+                    </div>
+                    <div class="glass-panel p-3 rounded-xl text-center">
+                        <span class="block text-2xl font-bold text-[#D9B08C] font-mono">O(N)</span>
+                        <span class="text-xs text-[#D1E8E2]/60 uppercase tracking-wider">Traversal</span>
+                    </div>
+                    <div class="glass-panel p-3 rounded-xl text-center">
+                        <span class="block text-2xl font-bold text-[#D1E8E2] font-mono">Infinite</span>
+                        <span class="text-xs text-[#D1E8E2]/60 uppercase tracking-wider">Loop Topology</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-5 relative">
+                <div class="absolute inset-0 bg-gradient-to-tr from-[#116466]/40 to-[#D9B08C]/20 rounded-3xl filter blur-2xl -z-10 animate-pulse"></div>
+                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-[#116466] shadow-2xl relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-[#116466]/20 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex items-center justify-between pb-6 border-b border-[#116466]/40">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                        </div>
+                        <span class="text-xs font-mono text-[#D9B08C]">topology.json</span>
+                    </div>
+                    <div class="py-6 space-y-4 font-mono text-sm">
+                        <div class="flex items-center justify-between text-[#D1E8E2]">
+                            <span class="text-[#D9B08C]">node_type:</span><span>Singly Circular</span>
+                        </div>
+                        <div class="flex items-center justify-between text-[#D1E8E2]">
+                            <span class="text-[#D9B08C]">head_pointer:</span><span class="text-green-400">0x7FFF5FB</span>
+                        </div>
+                        <div class="flex items-center justify-between text-[#D1E8E2]">
+                            <span class="text-[#D9B08C]">tail_next:</span><span class="text-yellow-400">&head (Loop Closed)</span>
+                        </div>
+                        <div class="p-4 rounded-xl bg-[#2C3531]/80 border border-[#116466] text-xs text-[#D1E8E2]/90 space-y-2">
+                            <div class="text-[#FFCB9A] font-bold flex items-center gap-1">
+                                <i data-lucide="zap" class="w-3.5 h-3.5"></i> Structural Guarantee:
+                            </div>
+                            <p>Unlike standard linked lists where the tail points to <code class="text-red-400">NULL</code>, a circular list ensures continuous navigation without encountering dead ends.</p>
+                        </div>
+                    </div>
+                    <div class="pt-2">
+                        <div class="w-full bg-[#116466]/30 h-2 rounded-full overflow-hidden">
+                            <div class="bg-gradient-to-r from-[#116466] to-[#FFCB9A] h-full w-full animate-pulse"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="intro" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 relative">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="text-xs font-mono uppercase tracking-widest text-[#D9B08C] px-3 py-1 rounded-md glass-panel border border-[#116466]">01. Definition & Logic</span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold mt-4 mb-4">What is a Circular Linked List?</h2>
+            <p class="text-[#D1E8E2]/80">A variation of a linked list where the last node points back to the first node (head) instead of containing a <code class="text-[#FFCB9A]">NULL</code> pointer.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="glass-panel glass-panel-hover p-8 rounded-2xl transition-all duration-300 space-y-4">
+                <div class="w-12 h-12 rounded-xl bg-[#116466]/40 border border-[#116466] flex items-center justify-center text-[#FFCB9A]">
+                    <i data-lucide="repeat" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-[#FFCB9A]">Continuous Traversal</h3>
+                <p class="text-sm text-[#D1E8E2]/80 leading-relaxed">
+                    Because the tail loops back to the head, any node can serve as a starting point for traversal, visiting every single element without breaking the chain.
+                </p>
+            </div>
+
+            <div class="glass-panel glass-panel-hover p-8 rounded-2xl transition-all duration-300 space-y-4">
+                <div class="w-12 h-12 rounded-xl bg-[#116466]/40 border border-[#116466] flex items-center justify-center text-[#D9B08C]">
+                    <i data-lucide="layers" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-[#D9B08C]">Memory Allocation</h3>
+                <p class="text-sm text-[#D1E8E2]/80 leading-relaxed">
+                    Nodes are dynamically allocated in heap memory using pointers, allowing the list to grow and shrink organically during runtime execution.
+                </p>
+            </div>
+
+            <div class="glass-panel glass-panel-hover p-8 rounded-2xl transition-all duration-300 space-y-4">
+                <div class="w-12 h-12 rounded-xl bg-[#116466]/40 border border-[#116466] flex items-center justify-center text-[#D1E8E2]">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-[#D1E8E2]">Infinite Loop Hazard</h3>
+                <p class="text-sm text-[#D1E8E2]/80 leading-relaxed">
+                    Standard linear traversal loops (<code class="text-red-400">while(ptr != NULL)</code>) will result in infinite loops unless a termination condition (like returning to head) is implemented.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="structure" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 relative">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="text-xs font-mono uppercase tracking-widest text-[#D9B08C] px-3 py-1 rounded-md glass-panel border border-[#116466]">02. Architectural Blueprint</span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold mt-4 mb-4">Structural Diagram & Node Anatomy</h2>
+            <p class="text-[#D1E8E2]/80">Visualizing how data payload and memory pointers connect in a circular topology.</p>
+        </div>
+
+        <div class="glass-panel p-8 sm:p-12 rounded-3xl border border-[#116466] shadow-2xl space-y-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold text-[#FFCB9A] flex items-center gap-2">
+                        <i data-lucide="cpu" class="w-6 h-6"></i> Node Structure Definition
+                    </h3>
+                    <p class="text-sm text-[#D1E8E2]/80 leading-relaxed">
+                        Each node contains two essential partitions: the <strong class="text-[#D9B08C]">Data Field</strong> (storing integer, string, or object payload) and the <strong class="text-[#D9B08C]">Next Pointer</strong> (storing the memory address of the subsequent node).
+                    </p>
+                    <div class="p-4 rounded-xl bg-[#2C3531] border border-[#116466] font-mono text-xs text-[#FFCB9A] space-y-1 shadow-inner">
+                        <p class="text-gray-400">// C Struct Representation</p>
+                        <p><span class="text-blue-400">struct</span> Node &#123;</p>
+                        <p class="pl-4"><span class="text-blue-400">int</span> data;</p>
+                        <p class="pl-4"><span class="text-blue-400">struct</span> Node* next;</p>
+                        <p>&#125;;</p>
+                    </div>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-[#2C3531]/60 border border-[#116466]/60 flex flex-col items-center justify-center space-y-6">
+                    <span class="text-xs font-mono text-[#D9B08C] uppercase tracking-wider">Conceptual Circular Linkage</span>
+                    <div class="flex flex-wrap justify-center items-center gap-4">
+                        <div class="p-4 rounded-xl glass-panel border border-[#FFCB9A] text-center w-24">
+                            <span class="block text-xs text-[#D1E8E2]/60">Node A</span>
+                            <span class="text-lg font-bold text-[#FFCB9A]">10</span>
+                        </div>
+                        <i data-lucide="arrow-right" class="w-6 h-6 text-[#116466]"></i>
+                        <div class="p-4 rounded-xl glass-panel border border-[#D9B08C] text-center w-24">
+                            <span class="block text-xs text-[#D1E8E2]/60">Node B</span>
+                            <span class="text-lg font-bold text-[#D9B08C]">20</span>
+                        </div>
+                        <i data-lucide="arrow-right" class="w-6 h-6 text-[#116466]"></i>
+                        <div class="p-4 rounded-xl glass-panel border border-[#D1E8E2] text-center w-24">
+                            <span class="block text-xs text-[#D1E8E2]/60">Node C (Tail)</span>
+                            <span class="text-lg font-bold text-[#D1E8E2]">30</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-mono text-yellow-400 bg-yellow-500/10 px-4 py-2 rounded-lg border border-yellow-500/20">
+                        <i data-lucide="corner-left-up" class="w-4 h-4"></i> Node C's next pointer links back to Node A (Head)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="types" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 relative">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="text-xs font-mono uppercase tracking-widest text-[#D9B08C] px-3 py-1 rounded-md glass-panel border border-[#116466]">03. Taxonomy</span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold mt-4 mb-4">Singly vs. Doubly Circular Linked List</h2>
+            <p class="text-[#D1E8E2]/80">Understanding the two primary architectural variants.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="glass-panel p-8 rounded-3xl border border-[#116466] space-y-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold text-[#FFCB9A]">Singly Circular Linked List</h3>
+                    <span class="px-3 py-1 rounded-full text-xs font-mono bg-[#116466]/50 text-[#FFCB9A] border border-[#116466]">Unidirectional</span>
+                </div>
+                <p class="text-sm text-[#D1E8E2]/80 leading-relaxed">
+                    In a singly circular linked list, each node contains a single pointer pointing to the next node in sequence. The last node points directly back to the head node, creating a unidirectional ring.
+                </p>
+                <ul class="space-y-3 text-sm text-[#D1E8E2]/90">
+                    <li class="flex items-center gap-2">
+                        <i data-lucide="check" class="w-4 h-4 text-green-400"></i> Lower memory overhead (only one pointer per node).
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i data-lucide="check" class="w-4 h-4 text-green-400"></i> Simpler pointer update logic during insertion/deletion.
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i data-lucide="x" class="w-4 h-4 text-red-400"></i> Cannot traverse backward without restarting from head.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="glass-panel p-8 rounded-3xl border border-[#116466] space-y-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-bold text-[#D9B08C]">Doubly Circular Linked List</h3>
+                    <span class="px-3 py-1 rounded-full text-xs font-mono bg-[#116466]/50 text-[#D9B08C] border border-[#116466]">Bidirectional</span>
+                </div>
+                <p class="text-sm text-[#D1E8E2]/80 leading-relaxed">
+                    In a doubly circular linked list, every node features two pointers: <code class="text-[#FFCB9A]">next</code> and <code class="text-[#FFCB9A]">prev</code>. The head's <code class="text-[#FFCB9A]">prev</code> points to the tail, and the tail's <code class="text-[#FFCB9A]">next</code> points to the head.
+                </p>
+                <ul class="space-y-3 text-sm text-[#D1E8E2]/90">
+                    <li class="flex items-center gap-2">
+                        <i data-lucide="check" class="w-4 h-4 text-green-400"></i> Bi-directional traversal (forward and backward seamlessly).
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i data-lucide="check" class="w-4 h-4 text-green-400"></i> Deletion of a given node is faster without separate predecessor lookup.
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i data-lucide="x" class="w-4 h-4 text-red-400"></i> Higher memory consumption due to storing dual pointers per node.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="operations" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 relative">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="text-xs font-mono uppercase tracking-widest text-[#D9B08C] px-3 py-1 rounded-md glass-panel border border-[#116466]">04. Operations Hub</span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold mt-4 mb-4">Core Algorithmic Operations</h2>
+            <p class="text-[#D1E8E2]/80">Detailed breakdown of how traversal, insertion, and deletion execute.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="glass-panel p-8 rounded-2xl space-y-4">
+                <div class="w-12 h-12 rounded-xl bg-[#116466]/40 border border-[#116466] flex items-center justify-center text-[#FFCB9A]">
+                    <i data-lucide="search" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-[#FFCB9A]">1. Traversal</h3>
+                <p class="text-sm text-[#D1E8E2]/80 leading-relaxed">
+                    Start at head, visit data, and advance pointer until you return to the head node. Guard the loop with a do-while construct to ensure execution runs at least once.
+                </p>
+            </div>
+
+            <div class="glass-panel p-8 rounded-2xl space-y-4">
+                <div class="w-12 h-12 rounded-xl bg-[#116466]/40 border border-[#116466] flex items-center justify-center text-[#D9B08C]">
+                    <i data-lucide="plus-circle" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-[#D9B08C]">2. Insertion</h3>
+                <p class="text-sm text-[#D1E8E2]/80 leading-relaxed">
+                    Can insert at the beginning (updating tail pointer), at the end, or at any indexed position. Requires careful updating of predecessor and successor links to maintain the circle.
+                </p>
+            </div>
+
+            <div class="glass-panel p-8 rounded-2xl space-y-4">
+                <div class="w-12 h-12 rounded-xl bg-[#116466]/40 border border-[#116466] flex items-center justify-center text-[#D1E8E2]">
+                    <i data-lucide="trash-2" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-[#D1E8E2]">3. Deletion</h3>
+                <p class="text-sm text-[#D1E8E2]/80 leading-relaxed">
+                    Removes node from beginning, end, or specific position. Re-links surrounding nodes and frees allocated memory to prevent leaks.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="code" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 relative">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="text-xs font-mono uppercase tracking-widest text-[#D9B08C] px-3 py-1 rounded-md glass-panel border border-[#116466]">05 & 06. Source Implementation</span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold mt-4 mb-4">Complete C Program & Pseudocode</h2>
+            <p class="text-[#D1E8E2]/80">Production-grade C implementation with dynamic memory allocation and full circular handling.</p>
+        </div>
+
+        <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-[#116466] shadow-2xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-[#116466]/40">
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1 rounded-lg bg-[#116466] text-[#FFCB9A] text-xs font-mono font-bold">C99 Standard</span>
+                    <span class="text-sm font-mono text-[#D1E8E2]">circular_linked_list.c</span>
+                </div>
+                <button onclick="copyCCode()" id="copy-btn" class="px-4 py-2 rounded-xl bg-[#116466]/60 hover:bg-[#116466] text-[#FFCB9A] text-xs font-mono flex items-center gap-2 border border-[#D9B08C]/40 transition-all shadow-md">
+                    <i data-lucide="copy" class="w-4 h-4"></i> Copy Code
+                </button>
+            </div>
+
+            <pre id="c-source-code" class="p-6 rounded-2xl bg-[#1c2421] border border-[#116466]/80 text-[#D1E8E2] font-mono text-xs sm:text-sm overflow-x-auto leading-relaxed shadow-inner"><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+// Function to insert a node at the end of a circular linked list
+void insertEnd(struct Node** head, int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode-&gt;data = data;
+    
+    if (*head == NULL) {
+        *head = newNode;
+        newNode-&gt;next = *head;
+        return;
+    }
+    
+    struct Node* temp = *head;
+    while (temp-&gt;next != *head) {
+        temp = temp-&gt;next;
+    }
+    temp-&gt;next = newNode;
+    newNode-&gt;next = *head;
+}
+
+// Function to traverse and display circular linked list
+void displayList(struct Node* head) {
+    if (head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+    
+    struct Node* temp = head;
+    printf("Circular List: ");
+    do {
+        printf("%d -> ", temp-&gt;data);
+        temp = temp-&gt;next;
+    } while (temp != head);
+    printf("(HEAD)\n");
+}
+
+int main() {
+    struct Node* head = NULL;
+    insertEnd(&head, 10);
+    insertEnd(&head, 20);
+    insertEnd(&head, 30);
+    
+    displayList(head);
+    return 0;
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="applications" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 relative">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Example Walkthrough -->
+            <div class="glass-panel p-8 rounded-3xl border border-[#116466] space-y-6">
+                <span class="text-xs font-mono uppercase tracking-widest text-[#D9B08C] px-3 py-1 rounded-md glass-panel border border-[#116466]">07. Walkthrough</span>
+                <h3 class="text-2xl font-bold text-[#FFCB9A]">Step-by-Step Trace</h3>
+                <div class="space-y-4 text-sm text-[#D1E8E2]/90">
+                    <div class="p-4 rounded-xl bg-[#2C3531]/80 border border-[#116466] space-y-1">
+                        <span class="text-xs font-mono text-[#FFCB9A]">Step 1: Initialization</span>
+                        <p>Create empty list. <code class="text-yellow-400">head = NULL</code>.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-[#2C3531]/80 border border-[#116466] space-y-1">
+                        <span class="text-xs font-mono text-[#FFCB9A]">Step 2: First Insertion (10)</span>
+                        <p>New node points to itself. <code class="text-yellow-400">head = newNode; newNode->next = head;</code></p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-[#2C3531]/80 border border-[#116466] space-y-1">
+                        <span class="text-xs font-mono text-[#FFCB9A]">Step 3: Subsequent Insertions (20, 30)</span>
+                        <p>Traverse to tail, link tail to new node, and new node to head.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-World Applications -->
+            <div class="glass-panel p-8 rounded-3xl border border-[#116466] space-y-6">
+                <span class="text-xs font-mono uppercase tracking-widest text-[#D9B08C] px-3 py-1 rounded-md glass-panel border border-[#116466]">08. Real-World Use Cases</span>
+                <h3 class="text-2xl font-bold text-[#D9B08C]">Where Is It Used?</h3>
+                <div class="space-y-4 text-sm text-[#D1E8E2]/90">
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 rounded-lg bg-[#116466]/40 text-[#FFCB9A] mt-1"><i data-lucide="clock" class="w-4 h-4"></i></div>
+                        <div>
+                            <strong class="text-[#FFCB9A] block">Round-Robin CPU Scheduling</strong>
+                            <p class="text-xs text-[#D1E8E2]/80">Operating systems cycle through active processes continuously in a loop, giving each process a fixed time slice.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 rounded-lg bg-[#116466]/40 text-[#D9B08C] mt-1"><i data-lucide="music" class="w-4 h-4"></i></div>
+                        <div>
+                            <strong class="text-[#D9B08C] block">Playlist Loop & Media Players</strong>
+                            <p class="text-xs text-[#D1E8E2]/80">When repeat mode is enabled on music players, the last track loops seamlessly back to the first track.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 rounded-lg bg-[#116466]/40 text-[#D1E8E2] mt-1"><i data-lucide="users" class="w-4 h-4"></i></div>
+                        <div>
+                            <strong class="text-[#D1E8E2] block">Multiplayer Turn Management</strong>
+                            <p class="text-xs text-[#D1E8E2]/80">Turn-based board games cycle through players in order, looping back to Player 1 after the last player's turn.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="visualizer" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 relative">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="text-xs font-mono uppercase tracking-widest text-[#D9B08C] px-3 py-1 rounded-md glass-panel border border-[#116466]">11. Live Interactive Sandbox</span>
+            <h2 class="text-3xl sm:text-4xl font-extrabold mt-4 mb-4">Circular Linked List Visualizer Tool</h2>
+            <p class="text-[#D1E8E2]/80">Add nodes, delete items, and trigger animated circular traversal in real-time.</p>
+        </div>
+
+        <div class="glass-panel p-6 sm:p-10 rounded-3xl border border-[#116466] shadow-2xl space-y-8">
+            <!-- Control Panel -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="flex gap-2">
+                    <input type="number" id="node-val-input" placeholder="Value (e.g. 42)" class="w-full px-4 py-3 rounded-xl bg-[#2C3531] border border-[#116466] text-[#D1E8E2] text-sm focus:outline-none focus:border-[#FFCB9A]">
+                    <button onclick="addNode()" class="px-4 py-3 bg-[#116466] hover:bg-[#116466]/80 text-[#FFCB9A] font-semibold rounded-xl text-sm border border-[#D9B08C]/40 shadow-md transition-all whitespace-nowrap">Add Node</button>
+                </div>
+                <div class="flex gap-2">
+                    <input type="number" id="del-val-input" placeholder="Value to delete" class="w-full px-4 py-3 rounded-xl bg-[#2C3531] border border-[#116466] text-[#D1E8E2] text-sm focus:outline-none focus:border-[#FFCB9A]">
+                    <button onclick="deleteNode()" class="px-4 py-3 bg-red-900/60 hover:bg-red-900 text-red-200 font-semibold rounded-xl text-sm border border-red-500/40 shadow-md transition-all whitespace-nowrap">Delete</button>
+                </div>
+                <button onclick="startTraversal()" class="px-6 py-3 bg-gradient-to-r from-[#116466] to-[#D9B08C] text-[#2C3531] font-bold rounded-xl text-sm shadow-lg hover:scale-105 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="play" class="w-4 h-4"></i> Start Traversal
+                </button>
+                <button onclick="resetList()" class="px-6 py-3 glass-panel hover:bg-[#116466]/30 text-[#D1E8E2] font-semibold rounded-xl text-sm border border-[#116466] transition-all">Reset List</button>
+            </div>
+
+            <!-- Visualization Canvas / Render Box -->
+            <div id="visualizer-container" class="relative w-full h-80 rounded-2xl bg-[#2C3531]/80 border border-[#116466] flex items-center justify-center overflow-hidden p-6 shadow-inner">
+                <div id="nodes-ring-container" class="relative w-full h-full flex items-center justify-center">
+                    <!-- Dynamic nodes rendered via JS -->
+                </div>
+            </div>
+
+            <!-- State Log Box -->
+            <div class="p-4 rounded-xl bg-[#2C3531] border border-[#116466]/80 font-mono text-xs text-[#D1E8E2] space-y-2">
+                <div class="flex items-center justify-between text-[#D9B08C] border-b border-[#116466]/40 pb-2">
+                    <span class="flex items-center gap-1.5"><i data-lucide="terminal" class="w-4 h-4"></i> Execution State Log</span>
+                    <span id="list-status-badge" class="px-2 py-0.5 rounded bg-green-500/20 text-green-300">Ready</span>
+                </div>
+                <div id="execution-log" class="h-16 overflow-y-auto space-y-1 text-[#D1E8E2]/80">
+                    <p>[System] Circular Linked List initialized with sample nodes: 10 -> 20 -> 30.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="complexity" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 relative">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Big-O Complexity Table -->
+            <div class="glass-panel p-8 rounded-3xl border border-[#116466] space-y-6">
+                <span class="text-xs font-mono uppercase tracking-widest text-[#D9B08C] px-3 py-1 rounded-md glass-panel border border-[#116466]">10. Complexity Analysis</span>
+                <h3 class="text-2xl font-bold text-[#FFCB9A]">Time & Space Complexity</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-[#D1E8E2]">
+                        <thead>
+                            <tr class="border-b border-[#116466]/60 text-[#D9B08C] font-mono">
+                                <th class="py-3 px-2">Operation</th>
+                                <th class="py-3 px-2">Average Case</th>
+                                <th class="py-3 px-2">Worst Case</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#116466]/30 font-mono text-xs">
+                            <tr>
+                                <td class="py-3 px-2">Access / Search</td>
+                                <td class="py-3 px-2 text-yellow-400">O(N)</td>
+                                <td class="py-3 px-2 text-red-400">O(N)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-2">Insertion (Beginning / Tail)</td>
+                                <td class="py-3 px-2 text-green-400">O(1)*</td>
+                                <td class="py-3 px-2 text-yellow-400">O(N)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-2">Deletion</td>
+                                <td class="py-3 px-2 text-yellow-400">O(N)</td>
+                                <td class="py-3 px-2 text-red-400">O(N)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-[#D1E8E2]/70">*Note: If a direct tail pointer is maintained, insertion at beginning or end is O(1).</p>
+            </div>
+
+            <!-- Conclusion -->
+            <div class="glass-panel p-8 rounded-3xl border border-[#116466] space-y-6">
+                <span class="text-xs font-mono uppercase tracking-widest text-[#D9B08C] px-3 py-1 rounded-md glass-panel border border-[#116466]">12. Summary</span>
+                <h3 class="text-2xl font-bold text-[#D9B08C]">Conclusion & Learnings</h3>
+                <p class="text-sm text-[#D1E8E2]/80 leading-relaxed">
+                    The Circular Linked List provides an elegant structural paradigm where the structural boundary disappears, enabling seamless continuous traversal. 
+                </p>
+                <div class="space-y-3 text-sm text-[#D1E8E2]/90">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i> Eliminates dead ends by looping tail back to head.
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i> Crucial for round-robin scheduling and infinite playback loops.
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i> Requires robust termination guards to prevent infinite CPU loops.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-12 border-t border-[#116466]/40 glass-panel mt-20 text-center text-xs text-[#D1E8E2]/60 font-mono z-10 relative">
+        <div class="max-w-7xl mx-auto px-4 space-y-3">
+            <p>CYBER_CIRCULAR DSA Immersive Project — Built with HTML5, Tailwind CSS, & Vanilla JavaScript.</p>
+            <p class="text-[#D9B08C]">Designed for elite algorithmic exploration & interactive learning.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Custom Cursor Movement
+        const cursor = document.getElementById('custom-cursor');
+        window.addEventListener('mousemove', (e) => {
+            cursor.style.left = `${e.clientX}px`;
+            cursor.style.top = `${e.clientY}px`;
+        });
+
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Canvas Background Animation (Warp-speed / Neon Particle Network)
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.8;
+                this.radius = Math.random() * 2 + 1;
+                this.color = Math.random() > 0.5 ? '#116466' : '#D9B08C';
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 70; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw connecting lines for nearby particles
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.strokeStyle = `rgba(17, 100, 102, ${1 - dist / 120})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        // Copy C Code Function
+        function copyCCode() {
+            const codeText = document.getElementById('c-source-code').innerText;
+            const textarea = document.createElement('textarea');
+            textarea.value = codeText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                const btn = document.getElementById('copy-btn');
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-green-400"></i> Copied!';
+                lucide.createIcons();
+                setTimeout(() => {
+                    btn.innerHTML = '<i data-lucide="copy" class="w-4 h-4"></i> Copy Code';
+                    lucide.createIcons();
+                }, 2500);
+            } catch (err) {
+                console.error('Failed to copy text', err);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Interactive Visualizer State
+        let linkedList = [10, 20, 30];
+        let activeTraversalIndex = -1;
+
+        function renderList() {
+            const container = document.getElementById('nodes-ring-container');
+            container.innerHTML = '';
+            
+            if (linkedList.length === 0) {
+                container.innerHTML = '<p class="text-sm text-[#D1E8E2]/50 font-mono">List is empty. Add nodes to visualize.</p>';
+                return;
+            }
+
+            const radius = 95;
+            const centerX = container.clientWidth / 2 || 150;
+            const centerY = container.clientHeight / 2 || 120;
+            const total = linkedList.length;
+
+            linkedList.forEach((val, idx) => {
+                const angle = (idx / total) * 2 * Math.PI - Math.PI / 2;
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+
+                const nodeEl = document.createElement('div');
+                const isActive = idx === activeTraversalIndex;
+                nodeEl.className = `absolute w-14 h-14 rounded-2xl flex flex-col items-center justify-center font-mono text-xs font-bold transition-all duration-300 shadow-lg ${
+                    isActive 
+                        ? 'bg-[#FFCB9A] text-[#2C3531] border-2 border-[#D9B08C] scale-110 shadow-[0_0_20px_#FFCB9A]' 
+                        : 'glass-panel border border-[#116466] text-[#D1E8E2] hover:border-[#FFCB9A]'
+                }`;
+                nodeEl.style.transform = `translate(${x}px, ${y}px)`;
+                nodeEl.innerHTML = `
+                    <span>${val}</span>
+                    <span class="text-[9px] text-[#D9B08C]">#${idx}</span>
+                `;
+                container.appendChild(nodeEl);
+            });
+        }
+
+        function logExecution(message) {
+            const logBox = document.getElementById('execution-log');
+            const p = document.createElement('p');
+            p.innerText = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logBox.appendChild(p);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        function addNode() {
+            const input = document.getElementById('node-val-input');
+            const val = parseInt(input.value);
+            if (isNaN(val)) {
+                logExecution('[Error] Please enter a valid integer value.');
+                return;
+            }
+            linkedList.push(val);
+            input.value = '';
+            renderList();
+            logExecution(`[Success] Inserted node with value ${val}. Tail now loops to head.`);
+        }
+
+        function deleteNode() {
+            const input = document.getElementById('del-val-input');
+            const val = parseInt(input.value);
+            if (isNaN(val)) {
+                logExecution('[Error] Please enter a value to delete.');
+                return;
+            }
+            const idx = linkedList.indexOf(val);
+            if (idx === -1) {
+                logExecution(`[Warning] Value ${val} not found in list.`);
+                return;
+            }
+            linkedList.splice(idx, 1);
+            input.value = '';
+            renderList();
+            logExecution(`[Success] Deleted node with value ${val}. Links successfully updated.`);
+        }
+
+        function resetList() {
+            linkedList = [10, 20, 30];
+            activeTraversalIndex = -1;
+            renderList();
+            logExecution('[System] Reset list to default state: [10, 20, 30].');
+        }
+
+        async function startTraversal() {
+            if (linkedList.length === 0) {
+                logExecution('[Error] Cannot traverse an empty list.');
+                return;
+            }
+            const badge = document.getElementById('list-status-badge');
+            badge.innerText = 'Traversing';
+            badge.className = 'px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-300 animate-pulse';
+            logExecution('[Traversal] Starting circular traversal from Head (Index 0)...');
+
+            for (let i = 0; i <= linkedList.length; i++) {
+                activeTraversalIndex = i % linkedList.length;
+                renderList();
+                logExecution(`[Traversal] Visiting node at index ${activeTraversalIndex} with value: ${linkedList[activeTraversalIndex]}`);
+                await new Promise(r => setTimeout(r, 800));
+            }
+
+            activeTraversalIndex = -1;
+            renderList();
+            badge.innerText = 'Ready';
+            badge.className = 'px-2 py-0.5 rounded bg-green-500/20 text-green-300';
+            logExecution('[Traversal] Completed full circular loop. Returned safely to Head.');
+        }
+
+        // Initial render of visualizer
+        window.addEventListener('load', () => {
+            renderList();
+        });
+    </script>
+</body>
+</html>
